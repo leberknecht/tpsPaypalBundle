@@ -35,8 +35,15 @@ class ToolsTest extends \PHPUnit_Framework_TestCase
 
     public function testFlatenArraySimple()
     {
-        $arr = array('a' => 1, 'b' => 2, 'c' => array('a' => 1, 'b' => 2));
-        Tools::flatenArray($arr, '.');
+        $arr = array(
+            'a' => 1,
+            'b' => 2,
+            'c' => array(
+                'a' => 1,
+                'b' => 2
+            )
+        );
+        $arr = Tools::flatenArray($arr, '.');
         $this->assertEquals(array('a' => 1, 'b' => 2, 'c.a' => 1, 'c.b' => 2), $arr);
     }
 
