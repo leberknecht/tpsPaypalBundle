@@ -84,4 +84,6 @@ This will create a payment. Save the payment-id before redirecting the user, you
 Next steps
 ----------
 - Nicing the part
-- Classic-API MassPayment support 
+- Classic-API MassPayment support
+
+ [![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)
