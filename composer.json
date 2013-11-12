@@ -5,5 +5,11 @@
         "php":  ">=5.3.2",
         "symfony/framework-bundle": ">=2.0.16",
         "paypal/rest-api-sdk-php": "v0.7.1"
-    }
+    },
+
+    "autoload": {
+        "psr-0": { "tps\\PaypalBundle": "" }
+    },
+
+    "target-dir": "tps/paypal-bundle"
 }

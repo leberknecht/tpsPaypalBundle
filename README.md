@@ -29,10 +29,9 @@ tps_paypal:
         LogLevel:  FINE
 </pre></code>
 
-
 Usage
 -----
-### checkout
+### Checkout
 
 <pre><code>public function checkoutAction()
 {
@@ -77,7 +76,6 @@ This will create a payment. Save the payment-id before redirecting the user, you
 <pre><ocde>public function paypalOverviewAction()
 {
 	$transactions = $this->paypalService->listTransactions();
-
 	return $this->render('Acme:PaypalAdmin:overview.html.twig',
 		array('payments' => $transactions->getPayments())
 	);

@@ -31,10 +31,13 @@ class PaypalService
     /**
      * @param array $restConfig
      * @param array $apiConfig
+     * @throws \InvalidArgumentException
      */
     public function __construct(array $restConfig, array $apiConfig)
     {
-        define('PP_CONFIG_PATH', __DIR__ . '/../Resources/config');
+        if (!defined('PP_CONFIG_PATH')) {
+            define('PP_CONFIG_PATH', __DIR__ . '/../Resources/config');
+        }
         if (count($apiConfig) != 2) {
             throw new \InvalidArgumentException('expected $apiConfig to be array("client" => [...], "secret" => [...]');
         }

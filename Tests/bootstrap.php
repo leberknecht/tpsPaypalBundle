@@ -6,4 +6,4 @@ if (!$loader = @include __DIR__ . '/../vendor/autoload.php') {
         'php composer.phar install'.PHP_EOL);
 }
 
-$loader->add('.', __DIR__);
+$loader->add('../.', __DIR__);
