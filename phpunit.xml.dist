@@ -6,5 +6,4 @@
             <directory suffix="Test.php">./Tests</directory>
         </testsuite>
     </testsuites>
-
 </phpunit>

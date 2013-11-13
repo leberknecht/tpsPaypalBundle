@@ -34,7 +34,7 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         $payment = new Payment();
         $transactions = $payment->getTransactions();
         $this->assertEmpty($transactions);
-        $payment->addTransaction(array(new TransactionItem('test', 0.50, 'USD', 1)),'USD', 'none');
+        $payment->addTransaction(array(new TransactionItem('test', 0.50, 'USD', 1)), 'USD', 'none');
         $this->assertEquals(1, count($payment->getTransactions()));
     }
 
@@ -44,7 +44,7 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         $payment = new Payment();
         $transactions = $payment->getTransactions();
         $this->assertEmpty($transactions);
-        $payment->addTransaction(array(),'USD', 'none');
+        $payment->addTransaction(array(), 'USD', 'none');
         $this->assertEquals(1, count($payment->getTransactions()));
     }
 
@@ -92,10 +92,14 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     public function testGetTotal()
     {
         $payment = new Payment();
-        $payment->addTransaction(array(
+        $payment->addTransaction(
+            array(
                 new TransactionItem('test', 0.50, 'USD', 1),
                 new TransactionItem('test', 0.50, 'USD', 1)
-            ), 'USD', 'none');
+            ),
+            'USD',
+            'none'
+        );
         $transactions = $payment->getTransactions();
         $amount = $transactions[0]->getAmount();
         $this->assertEquals(1.00, $amount->getTotal());
@@ -105,20 +109,26 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
     {
         $paypalPaymentMock = $this->getMockBuilder('\PayPal\Api\Payment')->getMock();
         $linkMock = $this->getMockBuilder('\PayPal\Api\Links')->getMock();
-       $linkMock->expects($this->at(0))->method('getHref')->will($this->returnValue('test1'));
-       $linkMock->expects($this->at(1))->method('getHref')->will($this->returnValue('test2'));
-       $linkMock->expects($this->at(2))->method('getHref')->will($this->returnValue('test3'));
+        $linkMock->expects($this->at(0))->method('getHref')->will($this->returnValue('test1'));
+        $linkMock->expects($this->at(1))->method('getHref')->will($this->returnValue('test2'));
+        $linkMock->expects($this->at(2))->method('getHref')->will($this->returnValue('test3'));
 
         $paypalPaymentMock->expects($this->exactly(3))
-            ->method('getRedirectUrls')
-            ->will($this->returnValue(array(
-                        $linkMock, $linkMock, $linkMock
-                    )));
+            ->method('getLinks')
+            ->will(
+                $this->returnValue(
+                    array(
+                        $linkMock,
+                        $linkMock,
+                        $linkMock
+                    )
+                )
+            );
         $payment = new Payment();
         $payment->setPaypalPayment($paypalPaymentMock);
-        $this->assertEquals('test1', $payment->getApprovalUrl());
+        $this->assertEquals('test1', $payment->getSelfUrl());
         $this->assertEquals('test2', $payment->getApprovalUrl());
-        $this->assertEquals('test3', $payment->getApprovalUrl());
+        $this->assertEquals('test3', $payment->getExecuteUrl());
     }
 
     public function testGetCheckoutId()

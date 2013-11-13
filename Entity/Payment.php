@@ -149,7 +149,7 @@ class Payment
     public function getApprovalUrl()
     {
         /** @var \PayPal\Api\Links[] $redirectUrls */
-        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        $redirectUrls = $this->paypalPayment->getLinks();
         return $redirectUrls[self::REDIRECT_URL_APPROVAL_INDEX]->getHref();
     }
 
@@ -159,7 +159,7 @@ class Payment
     public function getSelfUrl()
     {
         /** @var \PayPal\Api\Links[] $redirectUrls */
-        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        $redirectUrls = $this->paypalPayment->getLinks();
         return $redirectUrls[self::REDIRECT_URL_SELF_INDEX]->getHref();
     }
 
@@ -169,7 +169,7 @@ class Payment
     public function getExecuteUrl()
     {
         /** @var \PayPal\Api\Links[] $redirectUrls */
-        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        $redirectUrls = $this->paypalPayment->getLinks();
         return $redirectUrls[self::REDIRECT_URL_EXECUTE_INDEX]->getHref();
     }
 
