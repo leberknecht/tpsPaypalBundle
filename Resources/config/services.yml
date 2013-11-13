@@ -1,4 +1,4 @@
 services:
     tps_paypal.paypal_service:
         class: tps\PaypalBundle\Services\PaypalService
-        arguments: [%tps_paypal.restConfig%, %tps_paypal.apiConfig% ]
+        arguments: [%tps_paypal.restConfig%, %tps_paypal.apiConfig%, %tps_paypal.classicApiConfig% ]

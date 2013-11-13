@@ -40,6 +40,7 @@ class tpsPaypalExtension extends Extension
         $restConfig['log.FileName'] = $kernelRootDir . DIRECTORY_SEPARATOR . $restConfig['log.FileName'];
         $container->setParameter('tps_paypal.restConfig', $restConfig);
         $container->setParameter('tps_paypal.apiConfig', Tools::arraySliceAssoc($config, $this->apiConfigKeys));
+        $container->setParameter('tps_paypal.classicApiConfig',  Tools::flatenArray($config['classic_api'], '.'));
         $loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__ . '/../Resources/config'));
         $loader->load('services.yml');
     }

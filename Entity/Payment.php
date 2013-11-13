@@ -29,7 +29,7 @@ class Payment
     private $paypalPayment;
 
     /**
-     * @var array
+     * @var PayPalTransaction[]
      */
     private $transactions = array();
 
@@ -192,5 +192,17 @@ class Payment
     public function getCheckoutId()
     {
         return $this->paypalPayment->getId();
+    }
+
+    /**
+     * @return float
+     */
+    public function getTotalTransactionAmout()
+    {
+        $total = 0;
+        foreach($this->transactions as $transaction) {
+            $total += $transaction->getAmount()->getTotal();
+        }
+        return (float)$total;
     }
 }

@@ -75,6 +75,5 @@ but if you do, you will have to care about the API context yourself
 Next steps
 ----------
 - Nicing the part
-- Classic-API MassPayment support
 
  [![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)

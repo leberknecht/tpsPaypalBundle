@@ -141,4 +141,22 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         $payment->setPaypalPayment($paypalPaymentMock);
         $this->assertEquals(42, $payment->getCheckoutId());
     }
+
+    public function testGetTotalTransactionAmout()
+    {
+        $payment = new Payment();
+        $payment->addTransaction(
+            array(
+                new TransactionItem('sweet', 12.00, 'USD', 2),
+                new TransactionItem('sweet', 4.00, 'USD', 1)
+            ), 'USD', 'test'
+        );
+        $payment->addTransaction(
+            array(
+                new TransactionItem('sweet', 12.00, 'USD', 2),
+                new TransactionItem('sweet', 3.00, 'USD', 1)
+            ), 'USD', 'test'
+        );
+        $this->assertEquals(55.00, $payment->getTotalTransactionAmout());
+    }
 } 
