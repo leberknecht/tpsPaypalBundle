@@ -48,12 +48,14 @@ class PaypalService
     }
 
     /**
-     * @param RedirectUrls $redirectUrls
      * @param PaypalTransaction $transaction
+     * @param string $returnUrlSuccess
+     * @param string $returnUrlCancel
      * @return Payment
      */
-    public function setupPayment(RedirectUrls $redirectUrls, PaypalTransaction $transaction)
+    public function setupPayment(PaypalTransaction $transaction, $returnUrlSuccess, $returnUrlCancel)
     {
+        $redirectUrls = $this->assembleRedirectUrls($returnUrlSuccess, $returnUrlCancel);
         $payment = new Payment();
         $payment->setIntent("sale");
         $payer = new Payer();
@@ -85,5 +87,16 @@ class PaypalService
         return Payment::all(array('count' => 8, 'start_index' => 0), $this->apiContext);
     }
 
-
+    /**
+     * @param $returnUrlSuccess
+     * @param $returnUrlCancel
+     * @return RedirectUrls
+     */
+    private function assembleRedirectUrls($returnUrlSuccess, $returnUrlCancel)
+    {
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setReturnUrl($returnUrlSuccess);
+        $redirectUrls->setCancelUrl($returnUrlCancel);
+        return $redirectUrls;
+    }
 }

@@ -30,9 +30,13 @@ class PaypalServiceTest extends \PHPUnit_Framework_TestCase
     public function testInitTransaction()
     {
         $redirectUrls = new RedirectUrls();
+        $returnUrlSuccess = 'http://test/success';
+        $returnUrlCancel = 'http://test/cancel';
+        $redirectUrls->setReturnUrl($returnUrlSuccess);
+        $redirectUrls->setCancelUrl($returnUrlCancel);
         $paypalService = new PaypalService(array(), array('testing', 'test'));
         $transaction = new Transaction();
-        $payment = $paypalService->setupPayment($redirectUrls, $transaction);
+        $payment = $paypalService->setupPayment($transaction, $returnUrlSuccess, $returnUrlCancel);
         $this->assertEquals($redirectUrls, $payment->getRedirectUrls());
         $this->assertEquals(array($transaction), $payment->getTransactions());
     }

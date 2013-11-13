@@ -1,6 +1,8 @@
 {
     "name": "tps/paypal-bundle",
     "description": "Symfony2 wrapper-bundle for rest-api-sdk-php and classic-api from paypal",
+    "keywords": ["paypal", "rest", "classic"],
+    "homepage": "https://github.com/leberknecht/tpsPaypalBundle",
     "require": {
         "php":  ">=5.3.2",
         "symfony/framework-bundle": ">=2.0.16",
@@ -8,7 +10,7 @@
     },
 
     "autoload": {
-        "psr-0": { "tps\\PaypalBundle": "" }
+        "psr-0": { "tps\\tpsPaypalBundle": "" }
     },
 
     "target-dir": "tps/paypal-bundle"
