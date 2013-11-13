@@ -20,6 +20,9 @@ use tps\PaypalBundle\Exception\NoTransactionItemsException;
 
 class Payment
 {
+    const REDIRECT_URL_SELF_INDEX= 0;
+    const REDIRECT_URL_APPROVAL_INDEX = 1;
+    const REDIRECT_URL_EXECUTE_INDEX = 2;
     /**
      * @var PaypalPayment $paypalPayment
      */
@@ -30,7 +33,9 @@ class Payment
      */
     private $transactions = array();
 
-
+    /**
+     * @var ApiContext
+     */
     private $apiContext;
 
     /**
@@ -130,12 +135,42 @@ class Payment
     }
 
     /**
-     * @return $this PaypalPayment
+     * @return PaypalPayment
      */
     public function createPaypalPayment()
     {
         $this->paypalPayment->setTransactions($this->transactions);
         return $this->paypalPayment->create($this->apiContext);
+    }
+
+    /**
+     * @return string
+     */
+    public function getApprovalUrl()
+    {
+        /** @var \PayPal\Api\Links[] $redirectUrls */
+        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        return $redirectUrls[self::REDIRECT_URL_APPROVAL_INDEX]->getHref();
+    }
+
+    /**
+     * @return string
+     */
+    public function getSelfUrl()
+    {
+        /** @var \PayPal\Api\Links[] $redirectUrls */
+        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        return $redirectUrls[self::REDIRECT_URL_SELF_INDEX]->getHref();
+    }
+
+    /**
+     * @return string
+     */
+    public function getExecuteUrl()
+    {
+        /** @var \PayPal\Api\Links[] $redirectUrls */
+        $redirectUrls = $this->paypalPayment->getRedirectUrls();
+        return $redirectUrls[self::REDIRECT_URL_EXECUTE_INDEX]->getHref();
     }
 
     /**
@@ -151,4 +186,11 @@ class Payment
         return $totalAmount;
     }
 
+    /**
+     * @return string
+     */
+    public function getCheckoutId()
+    {
+        return $this->paypalPayment->getId();
+    }
 }

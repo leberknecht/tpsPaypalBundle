@@ -8,9 +8,9 @@
 
 namespace tps\PaypalBundle\Tests\Entity;
 
-use PayPal\Api\RedirectUrls;
 use tps\PaypalBundle\Entity\Payment;
 use tps\PaypalBundle\Entity\TransactionItem;
+use Paypal\Api\Links;
 
 class PaymentTest extends \PHPUnit_Framework_TestCase
 {
@@ -99,5 +99,36 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         $transactions = $payment->getTransactions();
         $amount = $transactions[0]->getAmount();
         $this->assertEquals(1.00, $amount->getTotal());
+    }
+
+    public function testRedirectUrls()
+    {
+        $paypalPaymentMock = $this->getMockBuilder('\PayPal\Api\Payment')->getMock();
+        $linkMock = $this->getMockBuilder('\PayPal\Api\Links')->getMock();
+       $linkMock->expects($this->at(0))->method('getHref')->will($this->returnValue('test1'));
+       $linkMock->expects($this->at(1))->method('getHref')->will($this->returnValue('test2'));
+       $linkMock->expects($this->at(2))->method('getHref')->will($this->returnValue('test3'));
+
+        $paypalPaymentMock->expects($this->exactly(3))
+            ->method('getRedirectUrls')
+            ->will($this->returnValue(array(
+                        $linkMock, $linkMock, $linkMock
+                    )));
+        $payment = new Payment();
+        $payment->setPaypalPayment($paypalPaymentMock);
+        $this->assertEquals('test1', $payment->getApprovalUrl());
+        $this->assertEquals('test2', $payment->getApprovalUrl());
+        $this->assertEquals('test3', $payment->getApprovalUrl());
+    }
+
+    public function testGetCheckoutId()
+    {
+        $paypalPaymentMock = $this->getMockBuilder('\PayPal\Api\Payment')->getMock();
+        $paypalPaymentMock->expects($this->once())
+            ->method('getId')
+            ->will($this->returnValue(42));
+        $payment = new Payment();
+        $payment->setPaypalPayment($paypalPaymentMock);
+        $this->assertEquals(42, $payment->getCheckoutId());
     }
 } 

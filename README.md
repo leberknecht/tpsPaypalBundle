@@ -35,35 +35,25 @@ Usage
 
 <pre><code>public function checkoutAction()
 {
-	$paypalService = $this->get('tps_paypal.paypal_service');
-	$transaction = new PaypalTransaction();
-	$amount = new Amount();
-	$amount->setTotal(number_format(180.00, 2));
-	$amount->setCurrency('USD');
-	$transaction->setAmount($amount);
-	$transaction->setDescription('Purchase for ' . $sellingOrder->getAmount() . ' ' . $amount->getCurrency());
+	$returnUrl = 'http://myapp/success';
+	$cancelUrl = ''http://myapp/cancel/order123';
 
-	$itemList = new ItemList();
-	$item = new Item();
-	$item->setName('My sold item')
-		->setCurrency('USD')
-		->setPrice($amount->getTotal())
-		->setQuantity(1);
+    $payment = $this->get('tps_paypal.paypal_service')->setupPayment();
+    $orderItems = array(
+        new TransactionItem('Something sold', 18.99, 'USD', 1)
+    );
+    $payment->addTransaction($orderItems, 'USD', 'Order no. 123');
 
-	$itemList->setItems(array($item));
-	$transaction->setItemList($itemList);
-	$redirectUrls = new RedirectUrls();
-	$redirectUrls->setReturnUrl('http://myshop/returnAfterCheckoutUrl');
-	$redirectUrls->setCancelUrl('http://myshop/cancelCheckoutUrl');
-	$payment = $paypalService->setupPayment($redirectUrls, $paypalTransaction);
-	$payment->create();
-	list ($selfUrl, $approvalUrl, $executionUrl) = $payment->getLinks();
-	save_checkout_id($payment->getId());
-	redirect($approvalUrl);
+    $payment->setUrls($returnUrl, $cancelUrl);
+    $payment->createPaypalPayment();
+	save_checkout_id($payment->getCheckoutId());
+
+	redirect($payment->getApprovalUrl());
 }</code></pre>
 
-Yea, thats still a lot of code, i'm working on getting it into the bundle ^^
 This will create a payment. Save the payment-id before redirecting the user, you will need this id later to actually execute the payment.
+Note: you can create an instance of "tps\PaypalBundle\Entity\Payment" by yourself instead of calling the service,
+but if you do, you will have to care about the API context yourself
 
 ### transaction execution
 <pre><code>public function returnAfterCheckoutUrlAction()
