@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)[![Coverage Status](https://coveralls.io/repos/leberknecht/tpsPaypalBundle/badge.png?branch=master)](https://coveralls.io/r/leberknecht/tpsPaypalBundle?branch=master)
 tpsPaypalBundle
 ================================
 
@@ -75,5 +76,3 @@ but if you do, you will have to care about the API context yourself
 Next steps
 ----------
 - Nicing the part
-
- [![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)
