@@ -11,5 +11,6 @@
 
     "autoload": {
         "psr-0": { "tps\\PaypalBundle": "" }
-    }
+    },
+    "target-dir": "tps/PaypalBundle"
 }
