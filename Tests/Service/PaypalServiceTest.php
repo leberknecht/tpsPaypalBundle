@@ -10,6 +10,7 @@ namespace tps\PaypalBundle\Tests\Services;
 
 use PayPal\Api\RedirectUrls;
 use PayPal\Api\Transaction;
+use PayPal\Auth\OAuthTokenCredential;
 use tps\PaypalBundle\Services\PaypalService;
 
 class PaypalServiceTest extends \PHPUnit_Framework_TestCase
@@ -29,16 +30,11 @@ class PaypalServiceTest extends \PHPUnit_Framework_TestCase
 
     public function testInitTransaction()
     {
-        $redirectUrls = new RedirectUrls();
-        $returnUrlSuccess = 'http://test/success';
-        $returnUrlCancel = 'http://test/cancel';
-        $redirectUrls->setReturnUrl($returnUrlSuccess);
-        $redirectUrls->setCancelUrl($returnUrlCancel);
         $paypalService = new PaypalService(array(), array('testing', 'test'));
-        $transaction = new Transaction();
-        $payment = $paypalService->setupPayment($transaction, $returnUrlSuccess, $returnUrlCancel);
-        $this->assertEquals($redirectUrls, $payment->getRedirectUrls());
-        $this->assertEquals(array($transaction), $payment->getTransactions());
+        $result = $paypalService->setupPayment();
+        $apiContext = $result->getApiContext();
+        $this->assertInstanceOf('PayPal\Common\PPApiContext', $apiContext);
+        $this->assertInstanceOf('tps\PaypalBundle\Entity\Payment', $result);
     }
 
     public function testExecuteTransaction()

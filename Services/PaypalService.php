@@ -8,13 +8,12 @@
 
 namespace tps\PaypalBundle\Services;
 
-use PayPal\Api\Payer;
 use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
-use PayPal\Api\RedirectUrls;
 use PayPal\Api\Transaction as PaypalTransaction;
 use PayPal\Auth\OAuthTokenCredential;
 use PayPal\Rest\ApiContext;
+use tps\PaypalBundle\Entity\Payment as tpsPayment;
 
 class PaypalService
 {
@@ -48,25 +47,6 @@ class PaypalService
     }
 
     /**
-     * @param PaypalTransaction $transaction
-     * @param string $returnUrlSuccess
-     * @param string $returnUrlCancel
-     * @return Payment
-     */
-    public function setupPayment(PaypalTransaction $transaction, $returnUrlSuccess, $returnUrlCancel)
-    {
-        $redirectUrls = $this->assembleRedirectUrls($returnUrlSuccess, $returnUrlCancel);
-        $payment = new Payment();
-        $payment->setIntent("sale");
-        $payer = new Payer();
-        $payer->setPaymentMethod('paypal');
-        $payment->setPayer($payer);
-        $payment->setRedirectUrls($redirectUrls);
-        $payment->setTransactions(array($transaction));
-        return $payment;
-    }
-
-    /**
      * @param string $checkoutId
      * @param string $payerId
      * @return Payment
@@ -88,15 +68,14 @@ class PaypalService
     }
 
     /**
-     * @param $returnUrlSuccess
-     * @param $returnUrlCancel
-     * @return RedirectUrls
+     * @param string $intent
+     * @param string $paymentMethod
+     * @return tpsPayment
      */
-    private function assembleRedirectUrls($returnUrlSuccess, $returnUrlCancel)
+    public function setupPayment($intent = 'sale', $paymentMethod = 'paypal')
     {
-        $redirectUrls = new RedirectUrls();
-        $redirectUrls->setReturnUrl($returnUrlSuccess);
-        $redirectUrls->setCancelUrl($returnUrlCancel);
-        return $redirectUrls;
+        $payment = new tpsPayment($intent, $paymentMethod);
+        $payment->setApiContext($this->apiContext);
+        return $payment;
     }
 }

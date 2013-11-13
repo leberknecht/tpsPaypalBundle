@@ -57,8 +57,9 @@ Usage
 	$redirectUrls->setCancelUrl('http://myshop/cancelCheckoutUrl');
 	$payment = $paypalService->setupPayment($redirectUrls, $paypalTransaction);
 	$payment->create();
+	list ($selfUrl, $approvalUrl, $executionUrl) = $payment->getLinks();
 	save_checkout_id($payment->getId());
-	redirect($transaction->getPaypalUrlApproval());
+	redirect($approvalUrl);
 }</code></pre>
 
 Yea, thats still a lot of code, i'm working on getting it into the bundle ^^
