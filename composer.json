@@ -9,7 +9,9 @@
         "paypal/rest-api-sdk-php": "v0.7.1",
         "paypal/merchant-sdk-php": "v3.6.106"
     },
-
+    "require-dev": {
+        "satooshi/php-coveralls": "dev-master"
+    },
     "autoload": {
         "psr-0": { "tps\\PaypalBundle": "" }
     },
