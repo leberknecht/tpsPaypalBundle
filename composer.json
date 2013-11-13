@@ -10,7 +10,7 @@
     },
 
     "autoload": {
-        "psr-0": { "tps\\tpsPaypalBundle": "" }
+        "psr-0": { "tps\\PaypalBundle": "" }
     },
 
     "target-dir": "tps/paypal-bundle"
