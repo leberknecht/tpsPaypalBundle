@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)[![Coverage Status](https://coveralls.io/repos/leberknecht/tpsPaypalBundle/badge.png?branch=master)](https://coveralls.io/r/leberknecht/tpsPaypalBundle?branch=master)
+[![Build Status](https://travis-ci.org/leberknecht/tpsPaypalBundle.png)](https://travis-ci.org/leberknecht/tpsPaypalBundle)
+[![Coverage Status](https://coveralls.io/repos/leberknecht/tpsPaypalBundle/badge.png?branch=master)](https://coveralls.io/r/leberknecht/tpsPaypalBundle?branch=master)
+
 tpsPaypalBundle
 ================================
 
@@ -28,10 +30,17 @@ tps_paypal:
         LogEnabled: true
         FileName: PayPal.log
         LogLevel:  FINE
+    classic_api:
+        acct1:
+            Username: yourPayPaylClassicApiUser
+            Password: yourPayPaylClassicApiPass
+            Signature: yourPayPaylClassicApiSignature
+        mode: live
 </pre></code>
 
 Usage
 -----
+
 ### Checkout
 
 <pre><code>public function checkoutAction()
