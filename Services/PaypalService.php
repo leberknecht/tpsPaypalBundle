@@ -8,7 +8,6 @@
 
 namespace tps\PaypalBundle\Services;
 
-use Doctrine\Common\Proxy\Exception\InvalidArgumentException;
 use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Auth\OAuthTokenCredential;

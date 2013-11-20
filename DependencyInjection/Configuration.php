@@ -59,7 +59,7 @@ class Configuration implements ConfigurationInterface
                 ->children()
                     ->arrayNode('acct1')
                         ->children()
-                            ->scalarNode('Username')
+                            ->scalarNode('UserName')
                                 ->defaultNull()
                                 ->info('Your Classic-API username')
                             ->end()
