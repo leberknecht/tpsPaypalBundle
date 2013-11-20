@@ -53,8 +53,8 @@ class PaypalService
             throw new \InvalidArgumentException('expected $apiConfig to be array("client" => [...], "secret" => [...]');
         }
         $this->restConfig = $restConfig;
-        list ($this->client, $this->secret) = array_values($apiConfig);
-        $this->apiContext = new ApiContext(new OAuthTokenCredential($this->client, $this->secret));
+        list ($client, $secret) = array_values($apiConfig);
+        $this->apiContext = new ApiContext(new OAuthTokenCredential($client, $secret));
         $this->apiContext->setConfig($restConfig);
         $this->classicApiInterface = new PayPalAPIInterfaceServiceService($classicApiConfig);
     }
