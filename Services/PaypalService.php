@@ -113,7 +113,7 @@ class PaypalService
      */
     public function listTransactions()
     {
-        return Payment::all(array('count' => 8, 'start_index' => 0), $this->apiContext);
+        return Payment::all(array('count' => 1, 'start_index' => 2), $this->apiContext);
     }
 
     /**
