@@ -159,4 +159,11 @@ class PaymentTest extends \PHPUnit_Framework_TestCase
         );
         $this->assertEquals(55.00, $payment->getTotalTransactionAmout());
     }
+
+    public function testGetOrderId()
+    {
+        $payment = new Payment();
+        $payment->setOrderId(42);
+        $this->assertEquals(42, $payment->getOrderId());
+    }
 } 
