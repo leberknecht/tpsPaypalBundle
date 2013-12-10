@@ -96,10 +96,25 @@ class PaypalServiceTest extends \PHPUnit_Framework_TestCase
         $paypalService->createChainPayment($payment, 'test@test.org', null);
     }
 
+    public function testCreateChainPaymentNoRedirectSpecified()
+    {
+        $paypalService = new PaypalService(array(), array('testing', 'test'), array());
+        $payment = new Payment();
+        $payment->addTransaction(array(new TransactionItem('testing', 23.00, 'USD', 1)),'USD', 'testing');
+        $this->setExpectedException('tps\PaypalBundle\Exception\NoRedirectUrlsDefinedException');
+        $paypalService->createChainPayment($payment, 'test@test.org', 'test@test.org');
+    }
+
     public function testCreateChainPaymentCredentialsInvalid()
     {
         $paypalService = new PaypalService(array(), array('testing', 'test'), array());
         $payment = new Payment();
+        $paypalPayment = new \PayPal\Api\Payment();
+        $redirectUrls = new RedirectUrls();
+        $redirectUrls->setCancelUrl('http://test/cancel');
+        $redirectUrls->setReturnUrl('http://test/return');
+        $paypalPayment->setRedirectUrls($redirectUrls);
+        $payment->setPaypalPayment($paypalPayment);
         $payment->addTransaction(array(new TransactionItem('testing', 23.00, 'USD', 1)),'USD', 'testing');
         $this->setExpectedException('PayPal\Exception\PPMissingCredentialException');
         $paypalService->createChainPayment($payment, 'test@test.org', 'test@test.org');

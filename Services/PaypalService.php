@@ -23,6 +23,7 @@ use PayRequest;
 use Receiver;
 use RequestEnvelope;
 use tps\PaypalBundle\Entity\Payment as tpsPayment;
+use tps\PaypalBundle\Exception\NoRedirectUrlsDefinedException;
 use tps\PaypalBundle\Exception\NoTransactionException;
 
 class PaypalService
@@ -115,9 +116,10 @@ class PaypalService
 
     /**
      * @param tpsPayment $payment
-     * @param string $primaryReceiverAccount
-     * @param string $secondaryReceiverAccount
+     * @param $primaryReceiverAccount
+     * @param $secondaryReceiverAccount
      * @return string
+     * @throws \tps\PaypalBundle\Exception\NoRedirectUrlsDefinedException
      * @throws \tps\PaypalBundle\Exception\NoTransactionException
      * @throws \InvalidArgumentException
      */
@@ -130,29 +132,18 @@ class PaypalService
             throw new \InvalidArgumentException('primary/secondary recipient is empty');
         }
 
-        $PPCredentialManager = PPCredentialManager::getInstance($this->classicApiConfig);
-        $credentials = $PPCredentialManager->getCredentialObject();
-
         $receiverList = new \ReceiverList(array(
                 $this->constructReceiver($payment, $secondaryReceiverAccount),
                 $this->constructReceiver($payment, $primaryReceiverAccount, true)
             )
         );
+        $redirectUrls = @$payment->getPaypalPayment()->getRedirectUrls();
+        if (empty($redirectUrls)) {
+            throw new NoRedirectUrlsDefinedException();
+        }
 
-        $redirectUrls = $payment->getPaypalPayment()->getRedirectUrls();
-        $payRequest = new PayRequest(
-            new RequestEnvelope("en_US"),
-            'PAY',
-            $redirectUrls->getCancelUrl(),
-            $this->getCurrencyFromPayment($payment),
-            $receiverList,
-            $redirectUrls->getReturnUrl()
-        );
-
-        $payRequest->feesPayer = 'SECONDARYONLY';
-        $payRequest->reverseAllParallelPaymentsOnError = false;
-
-        $response = $this->adaptivePaymentsService->Pay($payRequest, $credentials);
+        $payRequest = $this->assembleAdaptivePaymentRequest($payment, $redirectUrls, $receiverList);
+        $response = $this->executeAdaptivePaymentCall($payRequest);
         return $response->payKey;
     }
 
@@ -254,5 +245,39 @@ class PaypalService
             $this->getMassPaymentItem($recipientAddress, $currency, $paymentValue)
         );
         return $massPayRequest;
+    }
+
+    /**
+     * @param $payRequest
+     * @return \PayResponse
+     */
+    private function executeAdaptivePaymentCall($payRequest)
+    {
+        $PPCredentialManager = PPCredentialManager::getInstance($this->classicApiConfig);
+        $credentials = $PPCredentialManager->getCredentialObject();
+        $response = $this->adaptivePaymentsService->Pay($payRequest, $credentials);
+        return $response;
+    }
+
+    /**
+     * @param tpsPayment $payment
+     * @param $redirectUrls
+     * @param $receiverList
+     * @return PayRequest
+     */
+    private function assembleAdaptivePaymentRequest(tpsPayment $payment, $redirectUrls, $receiverList)
+    {
+        $payRequest = new PayRequest(
+            new RequestEnvelope("en_US"),
+            'PAY',
+            $redirectUrls->getCancelUrl(),
+            $this->getCurrencyFromPayment($payment),
+            $receiverList,
+            $redirectUrls->getReturnUrl()
+        );
+
+        $payRequest->feesPayer = 'SECONDARYONLY';
+        $payRequest->reverseAllParallelPaymentsOnError = false;
+        return $payRequest;
     }
 }
