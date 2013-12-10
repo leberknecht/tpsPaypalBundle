@@ -8,15 +8,20 @@
 
 namespace tps\PaypalBundle\Services;
 
+use AdaptivePaymentsService;
 use PayPal\Api\Payment;
 use PayPal\Api\PaymentExecution;
 use PayPal\Auth\OAuthTokenCredential;
+use PayPal\Core\PPCredentialManager;
 use PayPal\CoreComponentTypes\BasicAmountType;
 use PayPal\PayPalAPI\MassPayReq;
 use PayPal\PayPalAPI\MassPayRequestItemType;
 use PayPal\PayPalAPI\MassPayRequestType;
 use PayPal\Rest\ApiContext;
 use PayPal\Service\PayPalAPIInterfaceServiceService;
+use PayRequest;
+use Receiver;
+use RequestEnvelope;
 use tps\PaypalBundle\Entity\Payment as tpsPayment;
 use tps\PaypalBundle\Exception\NoTransactionException;
 
@@ -38,6 +43,16 @@ class PaypalService
     private $classicApiInterface;
 
     /**
+     * @var \AdaptivePaymentsService
+     */
+    private $adaptivePaymentsService;
+
+    /**
+     * @var array
+     */
+    private $classicApiConfig;
+
+    /**
      * @param array $restConfig
      * @param array $apiConfig
      * @param array $classicApiConfig
@@ -51,11 +66,14 @@ class PaypalService
         if (count($apiConfig) != 2) {
             throw new \InvalidArgumentException('expected $apiConfig to be array("client" => [...], "secret" => [...]');
         }
+        $this->classicApiConfig = $classicApiConfig;
         $this->restConfig = $restConfig;
         list ($client, $secret) = array_values($apiConfig);
+
         $this->apiContext = new ApiContext(new OAuthTokenCredential($client, $secret));
         $this->apiContext->setConfig($restConfig);
         $this->classicApiInterface = new PayPalAPIInterfaceServiceService($classicApiConfig);
+        $this->setAdaptivePaymentsService(new AdaptivePaymentsService($classicApiConfig));
     }
 
     /**
@@ -64,6 +82,22 @@ class PaypalService
     public function setClassicApiInterface(PayPalAPIInterfaceServiceService $interface)
     {
         $this->classicApiInterface = $interface;
+    }
+
+    /**
+     * @param \AdaptivePaymentsService $adaptivePaymentsService
+     */
+    public function setAdaptivePaymentsService($adaptivePaymentsService)
+    {
+        $this->adaptivePaymentsService = $adaptivePaymentsService;
+    }
+
+    /**
+     * @return \AdaptivePaymentsService
+     */
+    public function getAdaptivePaymentsService()
+    {
+        return $this->adaptivePaymentsService;
     }
 
     /**
@@ -81,12 +115,55 @@ class PaypalService
 
     /**
      * @param tpsPayment $payment
+     * @param string $primaryReceiverAccount
+     * @param string $secondaryReceiverAccount
+     * @return string
+     * @throws \tps\PaypalBundle\Exception\NoTransactionException
+     * @throws \InvalidArgumentException
+     */
+    public function createChainPayment(tpsPayment $payment, $primaryReceiverAccount, $secondaryReceiverAccount)
+    {
+        if (0 == count($payment->getTransactions())) {
+            throw new NoTransactionException('the payment has no transactions definied');
+        }
+        if (empty($primaryReceiverAccount) || empty($secondaryReceiverAccount)) {
+            throw new \InvalidArgumentException('primary/secondary recipient is empty');
+        }
+
+        $PPCredentialManager = PPCredentialManager::getInstance($this->classicApiConfig);
+        $credentials = $PPCredentialManager->getCredentialObject();
+
+        $receiverList = new \ReceiverList(array(
+                $this->constructReceiver($payment, $secondaryReceiverAccount),
+                $this->constructReceiver($payment, $primaryReceiverAccount, true)
+            )
+        );
+
+        $redirectUrls = $payment->getPaypalPayment()->getRedirectUrls();
+        $payRequest = new PayRequest(
+            new RequestEnvelope("en_US"),
+            'PAY',
+            $redirectUrls->getCancelUrl(),
+            $this->getCurrencyFromPayment($payment),
+            $receiverList,
+            $redirectUrls->getReturnUrl()
+        );
+
+        $payRequest->feesPayer = 'SECONDARYONLY';
+        $payRequest->reverseAllParallelPaymentsOnError = false;
+
+        $response = $this->adaptivePaymentsService->Pay($payRequest, $credentials);
+        return $response->payKey;
+    }
+
+    /**
+     * @param tpsPayment $payment
      * @param $recipientAddress
      * @throws \tps\PaypalBundle\Exception\NoTransactionException
      * @throws \InvalidArgumentException
      * @return \PayPal\PayPalAPI\MassPayResponseType
      */
-    public function sendPayment(tpsPayment $payment, $recipientAddress)
+    public function sendPaymentWithMassPay(tpsPayment $payment, $recipientAddress)
     {
         if (0 == count($payment->getTransactions())) {
             throw new NoTransactionException('the payment has no transactions definied');
@@ -97,15 +174,37 @@ class PaypalService
         $transactions = $payment->getTransactions();
         $currency = $transactions[0]->getAmount()->getCurrency();
         $paymentValue = $payment->getTotalTransactionAmout();
-        $massPayRequest = new MassPayRequestType();
-        $massPayRequest->MassPayItem = array();
-        $masspayItem = new MassPayRequestItemType();
-        $masspayItem->Amount = new BasicAmountType($currency, $paymentValue);
-        $masspayItem->ReceiverEmail = $recipientAddress;
-        $massPayRequest->MassPayItem[] = $masspayItem;
+        $massPayRequest = $this->getMassPaymentRequest($recipientAddress, $currency, $paymentValue);
         $massPayReq = new MassPayReq();
         $massPayReq->MassPayRequest = $massPayRequest;
         return $this->classicApiInterface->MassPay($massPayReq);
+    }
+
+    /**
+     * @param tpsPayment $payment
+     * @return string
+     */
+    private function getCurrencyFromPayment(tpsPayment $payment)
+    {
+        $transactions = $payment->getTransactions();
+        $items = $transactions[0]->getItemList()->getItems();
+        return $items[0]->getCurrency();
+    }
+
+    /**
+     * @param tpsPayment $payment
+     * @param string $recipientAddress
+     * @param bool $primary
+     * @return Receiver
+     */
+    private function constructReceiver(tpsPayment $payment, $recipientAddress, $primary = false)
+    {
+        $receiver = new Receiver();
+        $receiver->email = $recipientAddress;
+        $receiver->amount = $payment->getTotalTransactionAmout();
+        $receiver->primary = $primary;
+        $receiver->invoiceId = $payment->getOrderId();
+        return $receiver;
     }
 
     /**
@@ -126,5 +225,34 @@ class PaypalService
         $payment = new tpsPayment($intent, $paymentMethod);
         $payment->setApiContext($this->apiContext);
         return $payment;
+    }
+
+    /**
+     * @param string $recipientAddress
+     * @param string$currency
+     * @param float $paymentValue
+     * @return MassPayRequestItemType
+     */
+    private function getMassPaymentItem($recipientAddress, $currency, $paymentValue)
+    {
+        $masspayItem = new MassPayRequestItemType();
+        $masspayItem->Amount = new BasicAmountType($currency, $paymentValue);
+        $masspayItem->ReceiverEmail = $recipientAddress;
+        return $masspayItem;
+    }
+
+    /**
+     * @param string $recipientAddress
+     * @param string $currency
+     * @param float $paymentValue
+     * @return MassPayRequestType
+     */
+    private function getMassPaymentRequest($recipientAddress, $currency, $paymentValue)
+    {
+        $massPayRequest = new MassPayRequestType();
+        $massPayRequest->MassPayItem = array(
+            $this->getMassPaymentItem($recipientAddress, $currency, $paymentValue)
+        );
+        return $massPayRequest;
     }
 }

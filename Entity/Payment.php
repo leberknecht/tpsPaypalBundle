@@ -34,6 +34,11 @@ class Payment
     private $transactions = array();
 
     /**
+     * @var string
+     */
+    private $orderId;
+
+    /**
      * @var ApiContext
      */
     private $apiContext;
@@ -92,6 +97,22 @@ class Payment
     }
 
     /**
+     * @param string $orderId
+     */
+    public function setOrderId($orderId)
+    {
+        $this->orderId = $orderId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getOrderId()
+    {
+        return $this->orderId;
+    }
+
+    /**
      * @param array $items
      * @param $currency
      * @param $description
@@ -132,15 +153,6 @@ class Payment
         $redirectUrls->setReturnUrl($returnUrl);
         $redirectUrls->setCancelUrl($cancelUrl);
         $this->paypalPayment->setRedirectUrls($redirectUrls);
-    }
-
-    /**
-     * @return PaypalPayment
-     */
-    public function createPaypalPayment()
-    {
-        $this->paypalPayment->setTransactions($this->transactions);
-        return $this->paypalPayment->create($this->apiContext);
     }
 
     /**
@@ -204,5 +216,14 @@ class Payment
             $total += $transaction->getAmount()->getTotal();
         }
         return (float)$total;
+    }
+
+    /**
+     * @return PaypalPayment
+     */
+    public function createPaypalPayment()
+    {
+        $this->paypalPayment->setTransactions($this->transactions);
+        return $this->paypalPayment->create($this->apiContext);
     }
 }
