@@ -5,20 +5,22 @@ tpsPaypalBundle
 ================================
 
 This bundle intends to be a wrapper for both the RESTful-API and the classic-API.
-Currently in progress ^^ 
+Currently in progress ^^
 What we've got so far:
 
 Installation
 ------------
 Add the following line to your composer.json:
 
-<pre><code>require: "tps/paypal-bundle": "dev-master"</code></pre>
+```yaml
+require: "tps/paypal-bundle": "dev-master"
+```
 
 And run composer install
 
 Configuration
 -------------
-<pre><code>
+```yaml
 tps_paypal:
     client: HjaksuIHAsuhhamisecretKLJSisduijhdfJKHsdhiohdjklsjd90sdfjsdj
     secret: KLJsd9f0jfiammuchmoresecretindeedKJLSKdjs890dfjij2309sdujifj
@@ -36,17 +38,18 @@ tps_paypal:
             Password: yourPayPaylClassicApiPass
             Signature: yourPayPaylClassicApiSignature
         mode: live
-</pre></code>
+```
 
 Usage
 -----
 
 ### Checkout
 
-<pre><code>public function checkoutAction()
+```php
+public function checkoutAction()
 {
-	$returnUrl = 'http://myapp/success';
-	$cancelUrl = ''http://myapp/cancel/order123';
+    $returnUrl = 'http://myapp/success';
+    $cancelUrl = ''http://myapp/cancel/order123';
 
     $payment = $this->get('tps_paypal.paypal_service')->setupPayment();
     $orderItems = array(
@@ -56,31 +59,38 @@ Usage
 
     $payment->setUrls($returnUrl, $cancelUrl);
     $payment->createPaypalPayment();
-	save_checkout_id($payment->getCheckoutId());
+    save_checkout_id($payment->getCheckoutId());
 
-	redirect($payment->getApprovalUrl());
-}</code></pre>
+    redirect($payment->getApprovalUrl());
+}
+```
+
+
 
 This will create a payment. Save the payment-id before redirecting the user, you will need this id later to actually execute the payment.
 Note: you can create an instance of "tps\PaypalBundle\Entity\Payment" by yourself instead of calling the service,
 but if you do, you will have to care about the API context yourself
 
-### transaction execution
-<pre><code>public function returnAfterCheckoutUrlAction()
+### Transaction execution
+```php
+public function returnAfterCheckoutUrlAction()
 {
-	$checkoutId = load_checkoutId();
+	$checkoutId = load_checkoutId(); //to be implemented elsewhere
 	$paypalService = $this->get('tps_paypal.paypal_service');
 	$paypalService->executeTransaction($checkoutId, $payerId);
-}</code></pre>
+}
+```
 
 ### list payments
-<pre><ocde>public function paypalOverviewAction()
+```php
+public function paypalOverviewAction()
 {
 	$transactions = $this->paypalService->listTransactions();
 	return $this->render('Acme:PaypalAdmin:overview.html.twig',
 		array('payments' => $transactions->getPayments())
 	);
-}</pre></code>
+}
+```
 
 Next steps
 ----------
