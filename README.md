@@ -49,7 +49,7 @@ Usage
 public function checkoutAction()
 {
     $returnUrl = 'http://myapp/success';
-    $cancelUrl = ''http://myapp/cancel/order123';
+    $cancelUrl = 'http://myapp/cancel/order123';
 
     $payment = $this->get('tps_paypal.paypal_service')->setupPayment();
     $orderItems = array(
